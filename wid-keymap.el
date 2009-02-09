@@ -1,13 +1,13 @@
 ;;; wid-keymap.el --- display keymaps using widgets
 
-;; Copyright (C) 2008 Jonas Bernoulli
+;; Copyright (C) 2008, 2009 Jonas Bernoulli
 
-;; Author: Jonas Bernoulli <jonas@bernoulli.cc>
+;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20080830
-;; Updated: 20080830
-;; Version: 0.0.1
-;; Homepage: http://artavatar.net
-;; Keywords: extensions
+;; Updated: 20090209
+;; Version: 0.0.2
+;; Homepage: https://github.com/tarsius/wid-keymap
+;; Keywords: extensions, keymaps
 
 ;; This file is not part of GNU Emacs.
 
@@ -164,18 +164,10 @@
 				  :key (lambda (elt)
 					 (key-description (car elt))))))
 	     (child (widget-create-child-and-convert
-		     widget 'sexp-cell
+		     widget 'keyboard-key
 		     :position (cons row col)
 		     :event key
-		     :value (if entry (cdr entry) 'unbound)
-		     :value-to-internal
-		     (lambda (widget value)
-		       (if (eq value 'unbound) ""
-			 (prin1-to-string value)))
-		     :value-to-external
-		     (lambda (widget value)
-		       (if (equal value "") 'unbound
-			 (read value))))))
+		     :value (if entry (cdr entry) 'unbound))))
 	(widget-put widget :children
 		    (cons child (widget-get widget :children)))
 	child))))
@@ -187,6 +179,51 @@
 	      (unless (eq value 'unbound)
 		(list (cons event value)))))
 	  (widget-get widget :children)))
+
+;;; The `keyboard-key' Widget.
+
+(defvar widget-keyboard-force-cmds nil)
+
+(define-widget 'keyboard-key 'sexp-cell
+  "A key on a keyboard."
+  :value-to-internal 'widget-keyboard-key-value-to-internal
+  :value-to-external 'widget-keyboard-key-value-to-external)
+
+(defun widget-keyboard-key-value-to-internal (widget value)
+  (case value
+    (unbound "")
+    (self-insert-command (key-description (widget-get widget :event)))
+    (t (prin1-to-string value))))
+
+(defun widget-keyboard-key-value-to-external (widget value)
+  (cond ((equal value "") 'unbound)
+	((equal value (key-description (widget-get widget :event)))
+	 'self-insert-command)
+	(t
+	 (let ((cmd (read value)))
+	   (when (and (= 1 (length value))
+		      (not (commandp cmd))
+		      (not (memq cmd widget-keyboard-force-cmds)))
+	     (lwarn '(wid-keymap cus-keymap) :warning "\
+Are you sure you want to bind \"%s\" to `%s'?
+
+No such command exists, or the feature that provides it is not loaded.
+
+When customizing keymaps whenever a key is bound to `self-insert-command'
+the character that would be inserted is displayed instead of the that
+command.
+
+However this has the potential of the following problem:
+
+You intend to bind \"M\" to `self-insert-command' but instead of entering
+that command (which is the save thing to do) or \"M\" you actually enter
+\"m\".
+
+In order not to see this warning for `%s' again add it to
+`widget-keyboard-force-cmds'."
+		    (key-description (widget-get widget :event))
+		    value value))
+	   cmd))))
 
 ;;; The `event-binding-list' Widget.
 
