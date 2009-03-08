@@ -78,16 +78,19 @@
 		  :menu-tag "Annonymous"))
 	  children)
     (insert "\n")
-    (push (widget-create-child-and-convert
-	   widget 'keyboard
-	   :value value)
-	  children)
-    (insert "\n")
+    (dolist (layout keyboard-layout)
+      (push (widget-create-child-and-convert
+	     widget 'keyboard
+	     :keyboard layout
+	     :value value)
+	    children)
+      (insert "\n"))
     (push (widget-create-child-and-convert
 	   widget 'event-binding-list
 	   :format "%v%i\n"
 	   :value (nthcdr 3 value)
-	   :value-exclude (widget-value (car children)))
+	   :value-exclude (mapcan #'widget-value
+				  (butlast children 3)))
 	  children)
     (widget-put widget :children (nreverse children))))
 
@@ -114,11 +117,10 @@
 
 (defun widget-keymap-value-get (widget)
   (let ((children (widget-get widget :children)))
-    (nconc (list (widget-value (nth 0 children))
-		 (widget-value (nth 1 children))
-		 (widget-value (nth 2 children)))
-	   (widget-value (nth 3 children))
-	   (widget-value (nth 4 children)))))
+    (apply #'nconc (list (widget-value (nth 0 children))
+			 (widget-value (nth 1 children))
+			 (widget-value (nth 2 children)))
+	   (mapcar #'widget-value (nthcdr 3 children)))))
 
 ;;; The `keyboard' Widget.
 
@@ -127,7 +129,6 @@
   :convert-table 'widget-keyboard-convert
   :cell-create 'widget-keyboard-cell-create
   :value-get 'widget-keyboard-value-get
-  :keyboard 'keyboard-layout
   :column-size-default 27
   :column-size-minimum 10
   :column-size-maximum 30)
