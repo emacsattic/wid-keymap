@@ -1,11 +1,11 @@
 ;;; wid-keymap.el --- display keymaps using widgets
 
-;; Copyright (C) 2008, 2009 Jonas Bernoulli
+;; Copyright (C) 2008, 2009  Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20080830
 ;; Updated: 20090313
-;; Version: 0.0.2
+;; Version: 0.0.3
 ;; Homepage: https://github.com/tarsius/wid-keymap
 ;; Keywords: extensions, keymaps
 
@@ -172,7 +172,7 @@
 		     widget 'keyboard-key
 		     :position (cons row col)
 		     :event key
-		     :value (if entry (cdr entry) 'unbound))))
+		     :value (if entry (cdr entry) :unbound))))
 	(widget-put widget :children
 		    (cons child (widget-get widget :children)))
 	child))))
@@ -181,7 +181,7 @@
   (mapcan (lambda (child)
 	    (let ((event (widget-get child :event))
 		  (value (widget-value child)))
-	      (unless (eq value 'unbound)
+	      (unless (eq value :unbound)
 		(list (cons event value)))))
 	  (widget-get widget :children)))
 
@@ -196,7 +196,7 @@
 
 (defun widget-keyboard-key-value-to-internal (widget value)
   (let ((event (key-description (widget-get widget :event))))
-    (cond ((eq value 'unbound)
+    (cond ((eq value :unbound)
 	   "")
 	  ((and (eq value 'self-insert-command)
 		(not (member (intern event) widget-keyboard-force-cmds))
@@ -208,7 +208,7 @@
 (defun widget-keyboard-key-value-to-external (widget value)
   (let ((event (key-description (widget-get widget :event))))
     (cond ((equal value "")
-	   'unbound)
+	   :unbound)
 	  ((and (equal value event)
 		(not (member (intern value) widget-keyboard-force-cmds)))
 	   'self-insert-command)
@@ -269,7 +269,7 @@ In order not to see this warning for `%s' again add it to
 (defun widget-event-binding-list-value-get (widget)
   (mapcan (lambda (child)
 	    (let ((value (widget-value child)))
-	      (unless (eq (cdr value) 'unbound)
+	      (unless (eq (cdr value) :unbound)
 		(list value))))
 	  (widget-get widget :children)))
 
