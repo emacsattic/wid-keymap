@@ -191,28 +191,36 @@
   :value-to-external 'widget-keyboard-key-value-to-external)
 
 (defun widget-keyboard-key-value-to-internal (widget value)
-  (case value
-    (unbound "")
-    (self-insert-command (key-description (widget-get widget :event)))
-    (t (prin1-to-string value))))
+  (let ((event (key-description (widget-get widget :event))))
+    (cond ((eq value 'unbound)
+	   "")
+	  ((and (eq value 'self-insert-command)
+		(not (member (intern event) widget-keyboard-force-cmds))
+		(not (member event '("SPC" "TAB" "S-SPC" "S-TAB"))))
+	   event)
+	  (t
+	   (prin1-to-string value)))))
 
 (defun widget-keyboard-key-value-to-external (widget value)
-  (cond ((equal value "") 'unbound)
-	((equal value (key-description (widget-get widget :event)))
-	 'self-insert-command)
-	(t
-	 (let ((cmd (read value)))
-	   (when (and (= 1 (length value))
-		      (not (commandp cmd))
-		      (not (memq cmd widget-keyboard-force-cmds)))
-	     (lwarn '(wid-keymap cus-keymap) :warning "\
+  (let ((event (key-description (widget-get widget :event))))
+    (cond ((equal value "")
+	   'unbound)
+	  ((and (equal value event)
+		(not (member (intern value) widget-keyboard-force-cmds)))
+	   'self-insert-command)
+	  (t
+	   (let ((cmd (read value)))
+	     (when (and (= 1 (length value))
+			(not (commandp cmd))
+			(not (memq cmd widget-keyboard-force-cmds)))
+	       (lwarn '(wid-keymap cus-keymap) :warning "\
 Are you sure you want to bind \"%s\" to `%s'?
 
 No such command exists, or the feature that provides it is not loaded.
 
 When customizing keymaps whenever a key is bound to `self-insert-command'
 the character that would be inserted is displayed instead of the that
-command.
+command.  (Except for space and tab.)
 
 However this has the potential of the following problem:
 
