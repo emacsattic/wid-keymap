@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20080830
-;; Updated: 20090209
+;; Updated: 20090313
 ;; Version: 0.0.2
 ;; Homepage: https://github.com/tarsius/wid-keymap
 ;; Keywords: extensions, keymaps
@@ -82,13 +82,14 @@
       (push (widget-create-child-and-convert
 	     widget 'keyboard
 	     :keyboard layout
-	     :value value)
+	     :value (nthcdr 3 value))
 	    children)
       (insert "\n"))
     (push (widget-create-child-and-convert
 	   widget 'event-binding-list
 	   :format "%v%i\n"
 	   :value (nthcdr 3 value)
+	   ;; Exclude all events displayed above.
 	   :value-exclude (mapcan #'widget-value
 				  (butlast children 3)))
 	  children)
@@ -159,8 +160,7 @@
 	 :position (cons row col)
 	 :value-face 'widget-push-cell
 	 :value key)
-      (let* ((entry (car (member* (key-description key)
-				  (nthcdr 3 value)
+      (let* ((entry (car (member* (key-description key) value
 				  :test #'equal
 				  :key (lambda (elt)
 					 (key-description (car elt))))))
@@ -222,9 +222,8 @@ that command (which is the save thing to do) or \"M\" you actually enter
 
 In order not to see this warning for `%s' again add it to
 `widget-keyboard-force-cmds'."
-		    (key-description (widget-get widget :event))
-		    value value))
-	   cmd))))
+		    event value value))
+	     cmd)))))
 
 ;;; The `event-binding-list' Widget.
 
