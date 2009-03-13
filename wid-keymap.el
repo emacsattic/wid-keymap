@@ -85,6 +85,10 @@
 	     :value (nthcdr 3 value))
 	    children)
       (insert "\n"))
+    ;; XXX the presense of the `keyboard's causes following  list
+    ;; (`editable-list' also) to act strangely.  Mouse actions are
+    ;; performed away from where the user actually clicked.
+    (insert "Because of some strange bug you have to USE THE KEYBOARD to invoke any of the buttons below!\n\n")
     (push (widget-create-child-and-convert
 	   widget 'event-binding-list
 	   :format "%v%i\n"
