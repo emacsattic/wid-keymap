@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20080830
 ;; Updated: 20090313
-;; Version: 0.0.3
+;; Version: 0.0.3a
 ;; Homepage: https://github.com/tarsius/wid-keymap
 ;; Keywords: extensions, keymaps
 
@@ -25,6 +25,18 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
+;; Display keymaps using widgets.  Support libary for `cus-keymap.el'.
+
+;; **************************** WARNING ****************************
+;; *                                                               *
+;; *  This package is somewhat usable but it is not finished and   *
+;; *  since I no longer use it this will probably never change.    *
+;; *                                                               *
+;; *  If you are interested feel free to adopt it - orphans lead   *
+;; *  a sad live.                                                  *
+;; *                                                               *
+;; *****************************************************************
 
 ;;; Code:
 
